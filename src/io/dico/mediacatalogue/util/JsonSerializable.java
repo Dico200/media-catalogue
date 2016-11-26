@@ -1,4 +1,4 @@
-package io.dico.mediacatalogue;
+package io.dico.mediacatalogue.util;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -10,8 +10,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import static io.dico.mediacatalogue.JsonSerializable.read;
 
 public interface JsonSerializable {
 

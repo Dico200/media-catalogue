@@ -1,4 +1,4 @@
-package io.dico.mediacatalogue.mediatypes;
+package io.dico.mediacatalogue.media;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
@@ -8,16 +8,15 @@ import java.io.IOException;
 public abstract class AbstractMedia implements Media {
 
     private String title;
-    private int duration;
     private int rating;
     private int releaseYear;
 
     public AbstractMedia() {
     }
 
-    public AbstractMedia(String title, int duration, int rating, int releaseYear) {
+    public AbstractMedia(String title, int rating, int releaseYear) {
+        this();
         this.title = title;
-        this.duration = duration;
         this.rating = rating;
         this.releaseYear = releaseYear;
     }
@@ -25,11 +24,6 @@ public abstract class AbstractMedia implements Media {
     @Override
     public String title() {
         return title;
-    }
-
-    @Override
-    public int duration() {
-        return duration;
     }
 
     @Override
@@ -50,7 +44,6 @@ public abstract class AbstractMedia implements Media {
     public final void writeTo(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("title").value(title);
-        writer.name("duration").value(duration);
         writer.name("rating").value(rating);
         writer.name("releaseYear").value(releaseYear);
         writer.name("additionalFields");
@@ -69,9 +62,6 @@ public abstract class AbstractMedia implements Media {
                 case "title":
                     title = reader.nextString();
                     break;
-                case "duration":
-                    duration = reader.nextInt();
-                    break;
                 case "rating":
                     rating = reader.nextInt();
                     break;
@@ -88,6 +78,22 @@ public abstract class AbstractMedia implements Media {
                     break;
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append('(');
+        sb.append(type());
+        sb.append(')');
+        //TODO
+        return sb.toString();
+    }
+
+    @Override
+    public String toStringWithoutFieldNames() {
+        //TODO
+        return toString();
     }
 
     @Override
