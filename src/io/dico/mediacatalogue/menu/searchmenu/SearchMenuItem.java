@@ -3,13 +3,8 @@ package io.dico.mediacatalogue.menu.searchmenu;
 import io.dico.booleanformulaparser.BooleanFormula;
 import io.dico.booleanformulaparser.IllegalFormulaException;
 import io.dico.mediacatalogue.MediaContainer;
-import io.dico.mediacatalogue.media.AudioTrack;
-import io.dico.mediacatalogue.media.Film;
 import io.dico.mediacatalogue.media.Media;
-import io.dico.mediacatalogue.media.TelevisionProgramme;
 import io.dico.mediacatalogue.menu.MenuItem;
-import io.dico.mediacatalogue.util.function.PartialFunction;
-import io.dico.mediacatalogue.util.function.UndefinedException;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -21,7 +16,7 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 public class SearchMenuItem extends MenuItem {
-    private static final Map<String, Function<Media, String>> fieldFunctions;
+    //private static final Map<String, Function<Media, String>> fieldFunctions;
     private static final Map<String, SearchOperator> operators;
     private static final Map<String, Character> booleanFormulaOperators;
 
@@ -160,6 +155,7 @@ public class SearchMenuItem extends MenuItem {
     }
 
     static {
+        /*
         Map<String, Function<Media, String>> fieldFunctionMap = new HashMap<>();
         fieldFunctionMap.put("type", Media::type);
         fieldFunctionMap.put("title", Media::title);
@@ -210,6 +206,8 @@ public class SearchMenuItem extends MenuItem {
         });
         fieldFunctions = Collections.unmodifiableMap(fieldFunctionMap);
 
+        */
+
         Map<String, Character> booleanFormulaOperatorMap = new HashMap<>();
         booleanFormulaOperatorMap.put("<implies>", '→');
         booleanFormulaOperatorMap.put("<reverse_implies>", '←');
@@ -236,20 +234,20 @@ public class SearchMenuItem extends MenuItem {
 
         Map<String, SearchOperator> operatorMap = new HashMap<>();
         operatorMap.put("=", SearchOperator.withPredicate("tests if the values are equal", Object::equals));
-        operatorMap.put("contains", SearchOperator.withPredicate("tests if the first value contains the second", String::contains));
+        operatorMap.put("contains", SearchOperator.withStringPredicate("tests if the first value contains the second", String::contains));
 
         operatorMap.put(">", SearchOperator.withIntPredicate("tests if the first value is greater than the second", (left, right) -> left > right));
         operatorMap.put("<", SearchOperator.withIntPredicate("tests if the first value is less than the second", (left, right) -> left < right));
         operatorMap.put(">=", SearchOperator.withIntPredicate("tests if the first value is greater than or equal to the second", (left, right) -> left >= right));
         operatorMap.put("<=", SearchOperator.withIntPredicate("tests if the first value is less than or equal to the second", (left, right) -> left <= right));
 
-        operatorMap.put("find", SearchOperator.withPredicate("tests if the first value contains any matches for the second", (left, right) -> {
+        operatorMap.put("find", SearchOperator.withStringPredicate("tests if the first value contains any matches for the second", (left, right) -> {
             Pattern pattern = patternParser.apply(right.trim());
             Matcher matcher = pattern.matcher(left.trim());
             return matcher.find();
         }));
 
-        operatorMap.put("matches", SearchOperator.withPredicate("tests if the first value matches the second", (left, right) -> {
+        operatorMap.put("matches", SearchOperator.withStringPredicate("tests if the first value matches the second", (left, right) -> {
             Pattern pattern = patternParser.apply(right.trim());
             Matcher matcher = pattern.matcher(left.trim());
             return matcher.matches();

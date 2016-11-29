@@ -37,10 +37,9 @@ public class Duration extends Number {
      * the left side is parsed as hours, and the right side as minutes
      *
      * @param input
-     * @param parseMinutes
      * @return
      */
-    public static Duration fromString(String input, boolean parseMinutes) {
+    public static Duration fromString(String input/*, boolean parseMinutes*/) {
         try {
             return new Duration(parseInt(input));
         } catch (IllegalArgumentException e) {
@@ -81,15 +80,15 @@ public class Duration extends Number {
         }
     }
 
-    private final boolean minutes;
+    //private final boolean minutes;
     private final int count;
 
-    public Duration(boolean minutes, int count) {
+    public Duration(/*boolean minutes, */int count) {
         if (count <= 0) {
             throw new IllegalArgumentException("duration must be positive: " + count);
         }
         this.count = count;
-        this.minutes = minutes;
+        //this.minutes = minutes;
     }
 
     @Override
