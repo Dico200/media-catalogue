@@ -8,11 +8,11 @@ import java.util.*;
 
 public class BooleanFormulaParser {
 
-    private static final char symbol_AND = '&';
-    private static final char symbol_OR = '|';
-    private static final char symbol_IMPLIES = '>';
-    private static final char symbol_REVERSE_IMPLIES = '<';
-    private static final char symbol_NOT = '!';
+    private static final char symbol_AND = '^';
+    private static final char symbol_OR = 'v';
+    private static final char symbol_IMPLIES = '→';
+    private static final char symbol_REVERSE_IMPLIES = '←';
+    private static final char symbol_NOT = '¬';
 
     private static final TCharObjectMap<NodeReducer> reducers = new TCharObjectHashMap<NodeReducer>() {
         {

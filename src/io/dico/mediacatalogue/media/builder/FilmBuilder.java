@@ -2,6 +2,7 @@ package io.dico.mediacatalogue.media.builder;
 
 import io.dico.mediacatalogue.ConsoleOperator;
 import io.dico.mediacatalogue.media.Film;
+import io.dico.mediacatalogue.util.Duration;
 
 public class FilmBuilder extends AbstractMediaBuilder<Film> {
 
@@ -9,7 +10,7 @@ public class FilmBuilder extends AbstractMediaBuilder<Film> {
         super(console);
         defaults.put("duration", "90");
         defaults.put("studio", "Default Studio");
-        defaults.put("director", "Default Director");
+        defaults.put("getDirector", "Default Director");
     }
 
     @Override
@@ -20,10 +21,10 @@ public class FilmBuilder extends AbstractMediaBuilder<Film> {
     @Override
     public Film build() {
         String title = requestTitle();
-        int duration = requestDuration();
+        Duration duration = requestDuration();
         int releaseYear = requestReleaseYear();
         String studio = requestField("studio");
-        String director = requestField("director");
+        String director = requestField("getDirector");
         int rating = requestStarRating();
 
         resetSkipCount();

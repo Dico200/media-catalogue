@@ -68,6 +68,7 @@ public class MediaContainer extends LinkedHashSet<Media> {
         }
         PrintWriter printWriter = new PrintWriter(file);
         JsonWriter jsonWriter = new JsonWriter(printWriter);
+        jsonWriter.setIndent("  ");
         jsonWriter.beginObject();
         saveMediaType("films", Film.class, jsonWriter);
         saveMediaType("audio tracks", AudioTrack.class, jsonWriter);

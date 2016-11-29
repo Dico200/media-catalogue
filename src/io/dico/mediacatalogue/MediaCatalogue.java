@@ -43,6 +43,9 @@ public class MediaCatalogue {
                 if ("exit".equals(result)) {
                     exit();
                 }
+                if ("menu".equals(result)) {
+                    throw new MenuRequestException();
+                }
                 return result;
             }
         }, System.out::println);
@@ -81,7 +84,10 @@ public class MediaCatalogue {
 
     private void requestActionsContinuously() {
         while (true) {
-            menu.requestAction();
+            try {
+                menu.requestAction();
+            } catch (MenuRequestException ignored) {
+            }
         }
     }
 

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class SearchMenuItem extends MenuItem {
     private static final Map<String, Function<Media, String>> fieldFunctions;
     private static final Map<String, SearchOperator> operators;
+    private static final Map<String, Character> booleanFormulaOperators;
 
     private final MediaContainer mediaContainer;
     private final Consumer<List<Media>> consumer;
@@ -45,24 +46,27 @@ public class SearchMenuItem extends MenuItem {
         String variableChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         List<String> variables = new LinkedList<>();
         StringBuilder formula = new StringBuilder();
-        Pattern pattern = Pattern.compile("&|\\||>|<");
+        Pattern pattern = Pattern.compile("&|(\\|)|(<implies>)|(<reverse_implies>)");
         Matcher matcher = pattern.matcher(input);
 
         int end = 0;
         while (matcher.find()) {
             int start = matcher.start();
-            if (start != matcher.end()) {
-                throw new IllegalStateException("This shouldn't happen");
-            }
+            //if (start != matcher.end()) {
+            //   throw new IllegalStateException("This shouldn't happen");
+            //}
 
             String variable = input.substring(end, start).trim();
-            char operator = input.charAt(start);
+            String operator = input.substring(start, matcher.end());
             if (variable.startsWith("!")) {
                 formula.append('!');
                 variable = variable.substring(1);
             }
 
-            char variableChar = variableChars.charAt(variables.size());
+            Character variableChar = booleanFormulaOperators.get(operator);
+            if (variableChar == null) {
+                throw new IllegalArgumentException("Not an operator?");
+            }
             variables.add(variable);
             formula.append(variableChar);
             formula.append(operator);
@@ -104,63 +108,55 @@ public class SearchMenuItem extends MenuItem {
         console.writeLine("Search help");
     }
 
+    private String[] splitOnSpaceUnlessQuoted(String input) {
+        List<String> result = new LinkedList<>();
+        char[] chars = input.toCharArray();
+
+        StringBuilder current = null;
+        boolean inQuote = false;
+        boolean escapeNext = false;
+        for (char c : chars) {
+            if (current == null) {
+                current = new StringBuilder();
+            }
+            if (escapeNext) {
+                escapeNext = false;
+                current.append(c);
+            } else if (c == '\\') {
+                escapeNext = true;
+                current.append(c);
+            } else if (c == '"') {
+                inQuote = !inQuote;
+            } else if (c == ' ' && !inQuote) {
+                result.add(current.toString());
+                current = null;
+            } else {
+                current.append(c);
+            }
+        }
+        if (current != null) {
+            result.add(current.toString());
+        }
+        return result.toArray(new String[result.size()]);
+    }
+
     private SearchCondition parseCondition(String condition) {
         condition = condition.trim();
-        Pattern pattern = Pattern.compile("(\".*\")|( ?.* ?)");
-        Matcher matcher = pattern.matcher(condition);
-
-        int start1, end1;
-        if (matcher.find()) {
-            start1 = matcher.start();
-            end1 = matcher.end();
-        } else {
-            throw new IllegalArgumentException("left hand not found");
+        String[] splitted = splitOnSpaceUnlessQuoted(condition);
+        if (splitted.length != 3) {
+            throw new IllegalArgumentException("Illegal input length");
         }
 
-        if (start1 > 0) {
-            throw new IllegalArgumentException("left hand doesn't start at 0");
-        }
+        String left = splitted[0].trim();
+        String operatorInput = splitted[1];
+        String right = splitted[2].trim();
 
-        String left = condition.substring(start1, end1);
-        if (left.startsWith("\"") && left.endsWith("\"")) {
-            left = left.substring(1, left.length() - 1);
-        }
-
-        int start2, end2;
-        if (matcher.find(end1 + 1)) {
-            start2 = matcher.start();
-            end2 = matcher.end();
-        } else {
-            throw new IllegalArgumentException("right hand not found");
-        }
-
-        if (end2 < condition.length() - 1) {
-            throw new IllegalArgumentException("right hand doesn't end at length - 1");
-        }
-
-        String right = condition.substring(start2, end2);
-        if (right.startsWith("\"") && right.endsWith("\"")) {
-            right = right.substring(1, right.length() - 1);
-        }
-        String operatorInput = condition.substring(end2, start1).trim().toLowerCase();
         SearchOperator operator = operators.get(operatorInput);
         if (operator == null) {
-            throw new IllegalArgumentException("not an operator: " + operatorInput);
+            throw new IllegalArgumentException("Operator not found: " + operatorInput);
         }
 
-        Function<Media, String> leftFunction = fieldFunctions.get(left.trim());
-        if (leftFunction == null) {
-            String leftFinal = left;
-            leftFunction = media -> leftFinal;
-        }
-
-        Function<Media, String> rightFunction = fieldFunctions.get(right.trim());
-        if (rightFunction == null) {
-            String rightFinal = right;
-            rightFunction = media -> rightFinal;
-        }
-
-        return new SearchCondition(leftFunction, rightFunction, operator);
+        return new SearchCondition(left, right, operator);
     }
 
     static {
@@ -169,7 +165,7 @@ public class SearchMenuItem extends MenuItem {
         fieldFunctionMap.put("title", Media::title);
         fieldFunctionMap.put("releaseyear", media -> Integer.toString(media.releaseYear()));
         fieldFunctionMap.put("rating", media -> Integer.toString(media.rating()));
-        fieldFunctionMap.put("director", PartialFunction.onlyForInputClass(Film.class, Film::director));
+        fieldFunctionMap.put("getDirector", PartialFunction.onlyForInputClass(Film.class, Film::getDirector));
         fieldFunctionMap.put("studio", PartialFunction.onlyForInputClass(Film.class, Film::studio));
         fieldFunctionMap.put("episode", PartialFunction.onlyForInputClass(TelevisionProgramme.class, TelevisionProgramme::episode));
         fieldFunctionMap.put("channel", PartialFunction.onlyForInputClass(TelevisionProgramme.class, TelevisionProgramme::channel));
@@ -179,7 +175,7 @@ public class SearchMenuItem extends MenuItem {
         fieldFunctionMap.put("duration", new PartialFunction<Media, String>() {
             @Override
             public String apply(Media input) throws UndefinedException {
-                int duration;
+                Duration duration;
                 if (input instanceof Film) {
                     duration = ((Film) input).duration();
                 } else if (input instanceof AudioTrack) {
@@ -214,6 +210,14 @@ public class SearchMenuItem extends MenuItem {
         });
         fieldFunctions = Collections.unmodifiableMap(fieldFunctionMap);
 
+        Map<String, Character> booleanFormulaOperatorMap = new HashMap<>();
+        booleanFormulaOperatorMap.put("<implies>", '→');
+        booleanFormulaOperatorMap.put("<reverse_implies>", '←');
+        booleanFormulaOperatorMap.put("&", '^');
+        booleanFormulaOperatorMap.put("|", 'v');
+        booleanFormulaOperatorMap.put("!", '¬');
+        booleanFormulaOperators = Collections.unmodifiableMap(booleanFormulaOperatorMap);
+
         Function<String, Pattern> patternParser = new Function<String, Pattern>() {
             private Pattern previousPattern;
 
@@ -231,7 +235,7 @@ public class SearchMenuItem extends MenuItem {
         };
 
         Map<String, SearchOperator> operatorMap = new HashMap<>();
-        operatorMap.put("=", SearchOperator.withPredicate("tests if the values are equal", (left, right) -> left.trim().equals(right.trim())));
+        operatorMap.put("=", SearchOperator.withPredicate("tests if the values are equal", Object::equals));
         operatorMap.put("contains", SearchOperator.withPredicate("tests if the first value contains the second", String::contains));
 
         operatorMap.put(">", SearchOperator.withIntPredicate("tests if the first value is greater than the second", (left, right) -> left > right));

@@ -4,9 +4,14 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 public abstract class AbstractMedia implements Media {
 
+    private Map<String, Object> fieldValues;
     private String title;
     private int rating;
     private int releaseYear;
@@ -19,6 +24,7 @@ public abstract class AbstractMedia implements Media {
         this.title = title;
         this.rating = rating;
         this.releaseYear = releaseYear;
+        resetFieldValues();
     }
 
     @Override
@@ -36,20 +42,33 @@ public abstract class AbstractMedia implements Media {
         return releaseYear;
     }
 
+    protected abstract void setFieldValues(BiConsumer<String, Object> fieldConsumer);
+
+    private void resetFieldValues() {
+        fieldValues = new LinkedHashMap<>();
+        fieldValues.put("title", title);
+        fieldValues.put("year of release", releaseYear);
+        setFieldValues(fieldValues::put);
+        fieldValues.put("rating", rating);
+        fieldValues = Collections.unmodifiableMap(fieldValues);
+    }
+
+    @Override
+    public Map<String, Object> getFields() {
+        return fieldValues;
+    }
+
     protected abstract void writeFields(JsonWriter writer) throws IOException;
 
-    protected abstract void readFields(JsonReader reader) throws IOException;
+    protected abstract void readField(String name, JsonReader reader) throws IOException;
 
     @Override
     public final void writeTo(JsonWriter writer) throws IOException {
         writer.beginObject();
         writer.name("title").value(title);
         writer.name("rating").value(rating);
-        writer.name("releaseYear").value(releaseYear);
-        writer.name("additionalFields");
-        writer.beginObject();
+        writer.name("year of release").value(releaseYear);
         writeFields(writer);
-        writer.endObject();
         writer.endObject();
     }
 
@@ -65,19 +84,16 @@ public abstract class AbstractMedia implements Media {
                 case "rating":
                     rating = reader.nextInt();
                     break;
-                case "releaseYear":
+                case "year of release":
                     releaseYear = reader.nextInt();
                     break;
-                case "additionalFields":
-                    reader.beginObject();
-                    readFields(reader);
-                    reader.endObject();
-                    break;
                 default:
-                    reader.skipValue();
+                    readField(key, reader);
                     break;
             }
         }
+        reader.endObject();
+        resetFieldValues();
     }
 
     @Override
@@ -85,15 +101,17 @@ public abstract class AbstractMedia implements Media {
         StringBuilder sb = new StringBuilder();
         sb.append('(');
         sb.append(type());
-        sb.append(')');
-        //TODO
+        sb.append(')').append(' ');
+        boolean first = true;
+        for (Map.Entry<String, Object> entry : fieldValues.entrySet()) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(entry.getKey()).append(": \"").append(entry.getValue()).append('"');
+        }
         return sb.toString();
-    }
-
-    @Override
-    public String toStringWithoutFieldNames() {
-        //TODO
-        return toString();
     }
 
     @Override

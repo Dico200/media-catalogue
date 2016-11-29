@@ -4,6 +4,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 public class TelevisionProgramme extends AbstractMedia {
 
@@ -45,6 +46,14 @@ public class TelevisionProgramme extends AbstractMedia {
     }
 
     @Override
+    protected void setFieldValues(BiConsumer<String, Object> fieldConsumer) {
+        fieldConsumer.accept("series", series);
+        fieldConsumer.accept("episode", episode);
+        fieldConsumer.accept("studio", studio);
+        fieldConsumer.accept("channel", channel);
+    }
+
+    @Override
     protected void writeFields(JsonWriter writer) throws IOException {
         writer.name("series").value(series);
         writer.name("episode").value(episode);
@@ -53,26 +62,23 @@ public class TelevisionProgramme extends AbstractMedia {
     }
 
     @Override
-    protected void readFields(JsonReader reader) throws IOException {
-        while (reader.hasNext()) {
-            final String key = reader.nextName();
-            switch (key) {
-                case "series":
-                    series = reader.nextString();
-                    break;
-                case "episode":
-                    episode = reader.nextString();
-                    break;
-                case "studio":
-                    studio = reader.nextString();
-                    break;
-                case "channel":
-                    channel = reader.nextString();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
+    protected void readField(String name, JsonReader reader) throws IOException {
+        switch (name) {
+            case "series":
+                series = reader.nextString();
+                break;
+            case "episode":
+                episode = reader.nextString();
+                break;
+            case "studio":
+                studio = reader.nextString();
+                break;
+            case "channel":
+                channel = reader.nextString();
+                break;
+            default:
+                reader.skipValue();
+                break;
         }
     }
 }

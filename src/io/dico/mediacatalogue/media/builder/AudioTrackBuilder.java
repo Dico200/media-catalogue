@@ -2,6 +2,7 @@ package io.dico.mediacatalogue.media.builder;
 
 import io.dico.mediacatalogue.ConsoleOperator;
 import io.dico.mediacatalogue.media.AudioTrack;
+import io.dico.mediacatalogue.util.Duration;
 
 public class AudioTrackBuilder extends AbstractMediaBuilder<AudioTrack> {
 
@@ -22,7 +23,7 @@ public class AudioTrackBuilder extends AbstractMediaBuilder<AudioTrack> {
         String title = requestTitle();
         String artist = requestField("artist");
         int releaseYear = requestReleaseYear();
-        int duration = requestDuration();
+        Duration duration = requestDuration();
         String recordLabel = requestField("record label");
         int rating = requestStarRating();
         resetSkipCount();

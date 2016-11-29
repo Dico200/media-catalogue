@@ -2,6 +2,8 @@ package io.dico.mediacatalogue.media;
 
 import io.dico.mediacatalogue.util.JsonSerializable;
 
+import java.util.Map;
+
 /**
  * An interface for any type of work to implement
  */
@@ -45,15 +47,12 @@ public interface Media extends JsonSerializable {
     void set(String field, Object value);
 */
 
+    Map<String, Object> getFields();
+
     /**
      * @return A human-readable string representation of this work
      */
     String toString();
-
-    /**
-     *
-     */
-    String toStringWithoutFieldNames();
 
     /**
      * @return A hashCode for this work, complying with the hashCode contract

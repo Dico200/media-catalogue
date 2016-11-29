@@ -2,19 +2,21 @@ package io.dico.mediacatalogue.media;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import io.dico.mediacatalogue.util.Duration;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 public class Film extends AbstractMedia {
 
-    private int duration;
+    private Duration duration;
     private String studio;
     private String director;
 
     public Film() {
     }
 
-    public Film(String title, int releaseYear, int rating, int duration, String studio, String director) {
+    public Film(String title, int releaseYear, int rating, Duration duration, String studio, String director) {
         super(title, rating, releaseYear);
         this.duration = duration;
         this.studio = studio;
@@ -26,7 +28,7 @@ public class Film extends AbstractMedia {
         return "film";
     }
 
-    public int duration() {
+    public Duration duration() {
         return duration;
     }
 
@@ -34,35 +36,39 @@ public class Film extends AbstractMedia {
         return studio;
     }
 
-    public String director() {
+    public String getDirector() {
         return director;
+    }
+
+    @Override
+    protected void setFieldValues(BiConsumer<String, Object> fieldConsumer) {
+        fieldConsumer.accept("duration", duration);
+        fieldConsumer.accept("studio", studio);
+        fieldConsumer.accept("getDirector", director);
     }
 
     @Override
     protected void writeFields(JsonWriter writer) throws IOException {
         writer.name("duration").value(duration);
         writer.name("studio").value(studio);
-        writer.name("director").value(director);
+        writer.name("getDirector").value(director);
     }
 
     @Override
-    protected void readFields(JsonReader reader) throws IOException {
-        while (reader.hasNext()) {
-            final String key = reader.nextName();
-            switch (key) {
-                case "duration":
-                    duration = reader.nextInt();
-                    break;
-                case "studio":
-                    studio = reader.nextString();
-                    break;
-                case "director":
-                    director = reader.nextString();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
+    protected void readField(String name, JsonReader reader) throws IOException {
+        switch (name) {
+            case "duration":
+                duration = new Duration(reader.nextInt());
+                break;
+            case "studio":
+                studio = reader.nextString();
+                break;
+            case "getDirector":
+                director = reader.nextString();
+                break;
+            default:
+                reader.skipValue();
+                break;
         }
     }
 
@@ -74,7 +80,7 @@ public class Film extends AbstractMedia {
 
         Film film = (Film) o;
 
-        if (duration != film.duration) return false;
+        if (!duration.equals(film.duration)) return false;
         if (!studio.equals(film.studio)) return false;
         return director.equals(film.director);
     }
@@ -82,7 +88,7 @@ public class Film extends AbstractMedia {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + duration;
+        result = 31 * result + duration.intValue();
         result = 31 * result + studio.hashCode();
         result = 31 * result + director.hashCode();
         return result;

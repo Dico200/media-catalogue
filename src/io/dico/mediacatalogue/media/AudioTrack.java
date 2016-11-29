@@ -2,19 +2,21 @@ package io.dico.mediacatalogue.media;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import io.dico.mediacatalogue.util.Duration;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 public class AudioTrack extends AbstractMedia {
 
-    private int duration;
+    private Duration duration;
     private String artist;
     private String recordLabel;
 
     public AudioTrack() {
     }
 
-    public AudioTrack(String title, int rating, int releaseYear, int duration, String artist, String recordLabel) {
+    public AudioTrack(String title, int rating, int releaseYear, Duration duration, String artist, String recordLabel) {
         super(title, rating, releaseYear);
         this.duration = duration;
         this.artist = artist;
@@ -26,7 +28,7 @@ public class AudioTrack extends AbstractMedia {
         return "audio track";
     }
 
-    public int duration() {
+    public Duration duration() {
         return duration;
     }
 
@@ -39,30 +41,34 @@ public class AudioTrack extends AbstractMedia {
     }
 
     @Override
-    protected void writeFields(JsonWriter writer) throws IOException {
-        writer.name("duration").value(duration);
-        writer.name("artist").value(artist);
-        writer.name("recordLabel").value(recordLabel);
+    protected void setFieldValues(BiConsumer<String, Object> fieldConsumer) {
+        fieldConsumer.accept("duration", duration);
+        fieldConsumer.accept("artist", artist);
+        fieldConsumer.accept("record label", recordLabel);
     }
 
     @Override
-    protected void readFields(JsonReader reader) throws IOException {
-        while (reader.hasNext()) {
-            final String key = reader.nextName();
-            switch (key) {
-                case "duration":
-                    duration = reader.nextInt();
-                    break;
-                case "artist":
-                    artist = reader.nextString();
-                    break;
-                case "recordLabel":
-                    recordLabel = reader.nextString();
-                    break;
-                default:
-                    reader.skipValue();
-                    break;
-            }
+    protected void writeFields(JsonWriter writer) throws IOException {
+        writer.name("duration").value(duration);
+        writer.name("artist").value(artist);
+        writer.name("record label").value(recordLabel);
+    }
+
+    @Override
+    protected void readField(String name, JsonReader reader) throws IOException {
+        switch (name) {
+            case "duration":
+                duration = new Duration(Math.abs(reader.nextInt()));
+                break;
+            case "artist":
+                artist = reader.nextString();
+                break;
+            case "recordLabel":
+                recordLabel = reader.nextString();
+                break;
+            default:
+                reader.skipValue();
+                break;
         }
     }
 }
