@@ -18,5 +18,4 @@ public class MediaTypeMenu extends Menu {
             addItem(MenuItem.withRunnable(nameForAllTypes, () -> consumer.accept(null)));
         }
     }
-
 }

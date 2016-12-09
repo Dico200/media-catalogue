@@ -112,7 +112,7 @@ public class BooleanFormulaParser {
     }
 
     private Node addNode(Node current, Node toAdd) {
-        Node result = null;
+        Node result;
         if (negating) {
             toAdd = new NegatedNode(toAdd);
             negating = false;

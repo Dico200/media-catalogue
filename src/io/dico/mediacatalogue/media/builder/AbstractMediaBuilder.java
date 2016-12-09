@@ -1,12 +1,13 @@
 package io.dico.mediacatalogue.media.builder;
 
-import io.dico.mediacatalogue.ConsoleOperator;
 import io.dico.mediacatalogue.media.Media;
+import io.dico.mediacatalogue.util.ConsoleOperator;
 import io.dico.mediacatalogue.util.Duration;
 
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import static java.util.Calendar.YEAR;
 
@@ -15,7 +16,7 @@ public abstract class AbstractMediaBuilder<T extends Media> implements MediaBuil
     protected static final int CURRENT_YEAR = new GregorianCalendar().get(YEAR);
 
     protected final ConsoleOperator console;
-    protected final Map<String, String> defaults;
+    protected Map<String, String> defaults;
     private int skipCount = 0;
 
     public AbstractMediaBuilder(ConsoleOperator console) {
@@ -24,7 +25,15 @@ public abstract class AbstractMediaBuilder<T extends Media> implements MediaBuil
         defaults.put("title", "Default Title");
         defaults.put("year of release", Integer.toString(CURRENT_YEAR));
         defaults.put("rating", "7");
+        writeDefaultInputs(defaults::put);
     }
+    
+    public AbstractMediaBuilder(ConsoleOperator console, Map<String, String> defaults) {
+        this.console = console;
+        this.defaults = defaults;
+    }
+    
+    protected abstract void writeDefaultInputs(BiConsumer<String, String> writer);
 
     protected void resetSkipCount() {
         skipCount = 0;
@@ -39,17 +48,13 @@ public abstract class AbstractMediaBuilder<T extends Media> implements MediaBuil
      * @return The input, or the default value if skipped
      */
     protected String requestField(String fieldName) {
+        String defaultValue = defaults.get(fieldName);
         if (skipCount > 0) {
             skipCount--;
-            return defaults.get(fieldName);
+            return defaultValue;
         }
-
-        console.writeLine("Enter " + fieldName);
-        String result = console.requestLine();
-
-        if (result.equals("skip")) {
-            return defaults.get(fieldName);
-        }
+        
+        String result = console.requestLine("Enter " + fieldName, null, defaultValue);
 
         if (result.startsWith("skip ")) {
             String[] splitted = result.split(" ");
@@ -71,8 +76,8 @@ public abstract class AbstractMediaBuilder<T extends Media> implements MediaBuil
                     }
 
                     skipCount = number;
-                    return requestField(fieldName);
                 }
+                return requestField(fieldName);
             }
         }
 
@@ -112,8 +117,8 @@ public abstract class AbstractMediaBuilder<T extends Media> implements MediaBuil
     /**
      * @return A valid duration from the console
      */
-    protected Duration requestDuration() {
-        return console.requestWithExceptions(() -> Duration.fromString(requestField("duration")), null);
+    protected Duration requestDuration(boolean parseMinutes) {
+        return console.requestWithExceptions(() -> Duration.fromString(requestField("duration"), parseMinutes), null);
     }
 
     /**

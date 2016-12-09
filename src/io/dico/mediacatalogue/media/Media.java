@@ -46,7 +46,10 @@ public interface Media extends JsonSerializable {
      * /
     void set(String field, Object value);
 */
-
+    
+    /**
+     * @return An ordered map of field name to field instance for this media item
+     */
     Map<String, Object> getFields();
 
     /**

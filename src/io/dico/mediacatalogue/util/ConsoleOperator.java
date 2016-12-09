@@ -1,4 +1,4 @@
-package io.dico.mediacatalogue;
+package io.dico.mediacatalogue.util;
 
 import io.dico.mediacatalogue.util.function.UnsafeSupplier;
 
@@ -19,20 +19,6 @@ public class ConsoleOperator {
     public ConsoleOperator(Supplier<String> in, Consumer<String> out) {
         this.in = in;
         this.out = out;
-    }
-
-    /**
-     * @return The supplier used by this console operator to read from the console
-     */
-    public Supplier<String> getIn() {
-        return in;
-    }
-
-    /**
-     * @return The consumer used by this console operator to write to the console
-     */
-    public Consumer<String> getOut() {
-        return out;
     }
 
     /**
@@ -60,7 +46,20 @@ public class ConsoleOperator {
     public int requestInt() {
         return requestWithExceptions(() -> Integer.parseInt(requestLine()), "That's not a number, please try again");
     }
-
+    
+    /**
+     * Calls {@link this.requestLine()} and if the output is the same as {@param skip}, {@param ifSkipped} is returned
+     * Writes a line to the console first.
+     */
+    public String requestLine(String request, String skip, String ifSkipped) {
+        if (skip == null) {
+            skip = "";
+        }
+        writeLine(String.format("%s (%s: %s)", request, skip.isEmpty() ? "Enter" : skip, ifSkipped));
+        String input = requestLine();
+        return skip.equals(input) ? ifSkipped : input;
+    }
+    
     /**
      * Requests items from the Supplier until the output passes the Predicate.
      * If the output does not pass the predicate, a custom message is written to the console

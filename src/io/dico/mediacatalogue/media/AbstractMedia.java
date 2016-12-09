@@ -24,7 +24,6 @@ public abstract class AbstractMedia implements Media {
         this.title = title;
         this.rating = rating;
         this.releaseYear = releaseYear;
-        resetFieldValues();
     }
 
     @Override
@@ -44,8 +43,9 @@ public abstract class AbstractMedia implements Media {
 
     protected abstract void setFieldValues(BiConsumer<String, Object> fieldConsumer);
 
-    private void resetFieldValues() {
+    protected void resetFieldValues() {
         fieldValues = new LinkedHashMap<>();
+        fieldValues.put("type", type());
         fieldValues.put("title", title);
         fieldValues.put("year of release", releaseYear);
         setFieldValues(fieldValues::put);

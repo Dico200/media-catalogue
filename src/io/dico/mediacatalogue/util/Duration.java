@@ -12,46 +12,56 @@ public class Duration extends Number {
             throw new IllegalArgumentException("Not a number: " + input);
         }
     }
+    
+    private static double parseDouble(String input) {
+        try {
+            return Double.parseDouble(input);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Not floating point number: " + input);
+        }
+    }
+    
+    public static Duration fromString(String input) {
+        try {
+            return fromString(input, true);
+        } catch (Exception ex) {
+            return fromString(input, false);
+        }
+    }
 
     /**
      * Attempts to parse a duration from the given input
-     * A number is retrieved from the input through the following algorithm:
-     * <p>
-     * If the input is formatted as a number, parse it (in reality, this is try-catched).
-     * And return a duration of that number * secondsEach
-     * Otherwise, the string is checked for content of :
-     * If it does not contain :
-     * Apply the pattern -?[0-9]+[hm] if parseMinutes else -?[0-9]+[ms]
-     * An example is 1h30m or 3m30s
-     * Really just any number followed by the two characters at the end, 1 or more times.
-     * count = 0
-     * If the number is followed by the first of the two letters in the regex, add it * 60 to the count
-     * If the number is followed by the other letter, add it * 1 to the count
-     * If parseMinutes
-     * count *= 60
-     * return a duration of count seconds
-     * If it does contain :
-     * split the input at :
-     * if the length is 2
-     * try to parse a number from both sides
-     * the left side is parsed as hours, and the right side as minutes
-     *
-     * @param input
-     * @return
+     * The input can be formatted in hour-minute form or minute-second form.
+     * Forms can be just a number, in which case it can be floating point and represents hours or minutes,
+     * or a number:number form in which case the first is either hour/minute and second is minute/second
+     * or a sequence of matches to the regex -?[0-9]+[hms]
+     * @param input the input
+     * @param parseMinutes If true, it assumes hour-minute form.
+     * @throws IllegalArgumentException if a duration could not be parsed
      */
-    public static Duration fromString(String input/*, boolean parseMinutes*/) {
+    public static Duration fromString(String input, boolean parseMinutes) {
         try {
-            return new Duration(parseInt(input));
+            double number = parseDouble(input);
+            int unit = 60;
+            if (parseMinutes) {
+                unit *= 60;
+            }
+            return new Duration((int) (number * unit), parseMinutes);
         } catch (IllegalArgumentException e) {
             if (!input.contains(":")) {
-                Pattern pattern = Pattern.compile("-?[0-9]+[hm]");
+                Pattern pattern = Pattern.compile("-?[0-9]+[hms]");
                 Matcher matcher = pattern.matcher(input);
-                int minutes = 0;
+                int seconds = 0;
                 int end = 0;
                 while (matcher.find()) {
                     int start = matcher.start();
                     if (start != end) {
-                        throw new IllegalArgumentException("Invalid duration");
+                        String illegalChars = null;
+                        if (start > end) {
+                            // end is the end of the previous match.
+                            illegalChars = input.substring(end, start);
+                        }
+                        throw new IllegalArgumentException("Characters within the input were not recognized" + (illegalChars != null ? illegalChars : ""));
                     }
                     end = matcher.end();
 
@@ -59,62 +69,78 @@ public class Duration extends Number {
                     int count = parseInt(fieldInput.substring(0, fieldInput.length() - 1));
                     char type = fieldInput.charAt(fieldInput.length() - 1);
                     if (type == 'h') {
-                        count *= 60;
+                        seconds *= 3600;
+                    } else if (type == 'm') {
+                        seconds *= 60;
                     }
-                    minutes += count;
+                    seconds += count;
                 }
 
                 if (end != input.length()) {
-                    throw new IllegalArgumentException("Invalid duration");
+                    throw new IllegalArgumentException("Trailing characters are not recognized: " + input.substring(end, input.length()));
                 }
-                return new Duration(minutes);
+                return new Duration(seconds, parseMinutes);
             }
+            
             String[] split = input.split(":");
             if (split.length == 2) {
-                int hours = parseInt(split[0]);
-                int minutes = parseInt(split[1]);
+                int hours = parseInt(split[0]); // or minutes
+                int minutes = parseInt(split[1]); // or seconds
                 minutes += hours * 60;
-                return new Duration(minutes);
+                if (parseMinutes) {
+                    minutes *= 60;
+                }
+                return new Duration(minutes, parseMinutes);
             }
-            throw new IllegalArgumentException("Invalid duration");
+            
+            String excMsg;
+            if (parseMinutes) {
+                excMsg = "Duration not of the form <hours>h<minutes>m or <hours>:<minutes>, and " + e.getMessage();
+            } else {
+                excMsg = "Duration not of the form <minutes>m<seconds<s> or <minutes>:<seconds> and " + e.getMessage();
+            }
+            throw new IllegalArgumentException(excMsg);
         }
     }
-
-    //private final boolean minutes;
-    private final int count;
-
-    public Duration(/*boolean minutes, */int count) {
-        if (count <= 0) {
-            throw new IllegalArgumentException("duration must be positive: " + count);
+    
+    private final int seconds;
+    private final boolean parsedMinutes;
+    
+    public Duration(int seconds, boolean parsedMinutes) {
+        if (seconds <= 0) {
+            throw new IllegalArgumentException("duration must be positive: " + seconds);
         }
-        this.count = count;
-        //this.minutes = minutes;
+        this.seconds = seconds;
+        this.parsedMinutes = parsedMinutes;
     }
 
     @Override
     public int intValue() {
-        return count;
+        return seconds;
     }
 
     @Override
     public long longValue() {
-        return count;
+        return seconds;
     }
 
     @Override
     public float floatValue() {
-        return count;
+        return seconds;
     }
 
     @Override
     public double doubleValue() {
-        return count;
+        return seconds;
     }
 
     @Override
     public String toString() {
-        int higher = count / 60;
-        return Integer.toString(higher) + ":" + Integer.toString(count % 60);
+        int count = seconds;
+        if (parsedMinutes) {
+            count /= 60;
+        }
+        return Integer.toString(count / 60) + ":" + Integer.toString(count % 60);
     }
 
     @Override
@@ -124,12 +150,12 @@ public class Duration extends Number {
 
         Duration duration = (Duration) o;
 
-        return count == duration.count;
+        return seconds == duration.seconds;
     }
 
     @Override
     public int hashCode() {
-        return count;
+        return seconds;
     }
 
 }

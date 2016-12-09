@@ -22,6 +22,7 @@ public class TelevisionProgramme extends AbstractMedia {
         this.episode = episode;
         this.studio = studio;
         this.channel = channel;
+        resetFieldValues();
     }
 
     @Override

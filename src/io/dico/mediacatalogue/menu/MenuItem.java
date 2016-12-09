@@ -1,6 +1,6 @@
 package io.dico.mediacatalogue.menu;
 
-import io.dico.mediacatalogue.ConsoleOperator;
+import io.dico.mediacatalogue.util.ConsoleOperator;
 
 public abstract class MenuItem implements Comparable<MenuItem>, Runnable {
 

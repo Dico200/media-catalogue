@@ -5,7 +5,7 @@ import io.dico.mediacatalogue.util.function.IntBiPredicate;
 
 import java.util.function.BiPredicate;
 
-abstract class SearchOperator implements BiPredicate<Object, Object> {
+public abstract class SearchOperator implements BiPredicate<Object, Object> {
 
     static SearchOperator withIntPredicate(String description, IntBiPredicate predicate) {
         return new SearchOperator(description) {

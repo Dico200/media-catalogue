@@ -11,16 +11,31 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class MediaContainer extends LinkedHashSet<Media> {
-
-    public List<? extends Media> getItemsByType(Class<? extends Media> type) {
+    
+    private static MediaContainer instance;
+    
+    public static MediaContainer getInstance() {
+        return instance;
+    }
+    
+    public MediaContainer() {
+        instance = this;
+    }
+    
+    public List<Media> getItemsByType(Class<? extends Media> type) {
         if (type == null) {
             return new ArrayList<>(this);
         }
-        return stream().filter(type::isInstance).map(type::cast).collect(Collectors.toList());
+        return getItemsByCriteria(type::isInstance);
+    }
+    
+    public List<Media> getItemsByCriteria(Predicate<Media> predicate) {
+        return stream().filter(predicate).collect(Collectors.toList());
     }
 
     public void load(String fileName) throws IOException {

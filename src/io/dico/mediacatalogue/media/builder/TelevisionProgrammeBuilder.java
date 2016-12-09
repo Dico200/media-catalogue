@@ -1,18 +1,29 @@
 package io.dico.mediacatalogue.media.builder;
 
-import io.dico.mediacatalogue.ConsoleOperator;
+import io.dico.mediacatalogue.util.ConsoleOperator;
 import io.dico.mediacatalogue.media.TelevisionProgramme;
+
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class TelevisionProgrammeBuilder extends AbstractMediaBuilder<TelevisionProgramme> {
 
     public TelevisionProgrammeBuilder(ConsoleOperator console) {
         super(console);
-        defaults.put("series", "Default Series");
-        defaults.put("episode", "Default Episode");
-        defaults.put("studio", "Default Studio");
-        defaults.put("channel", "Default Channel");
     }
-
+    
+    public TelevisionProgrammeBuilder(ConsoleOperator console, Map<String, String> defaults) {
+        super(console, defaults);
+    }
+    
+    @Override
+    protected void writeDefaultInputs(BiConsumer<String, String> writer) {
+        writer.accept("series", "Default Series");
+        writer.accept("episode", "Default Episode");
+        writer.accept("studio", "Default Studio");
+        writer.accept("channel", "Default Channel");
+    }
+    
     @Override
     public Class<TelevisionProgramme> type() {
         return TelevisionProgramme.class;

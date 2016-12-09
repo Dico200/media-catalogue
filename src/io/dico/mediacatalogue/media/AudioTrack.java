@@ -21,6 +21,7 @@ public class AudioTrack extends AbstractMedia {
         this.duration = duration;
         this.artist = artist;
         this.recordLabel = recordLabel;
+        resetFieldValues();
     }
 
     @Override
@@ -49,7 +50,7 @@ public class AudioTrack extends AbstractMedia {
 
     @Override
     protected void writeFields(JsonWriter writer) throws IOException {
-        writer.name("duration").value(duration);
+        writer.name("duration").value(duration.intValue());
         writer.name("artist").value(artist);
         writer.name("record label").value(recordLabel);
     }
@@ -58,7 +59,7 @@ public class AudioTrack extends AbstractMedia {
     protected void readField(String name, JsonReader reader) throws IOException {
         switch (name) {
             case "duration":
-                duration = new Duration(Math.abs(reader.nextInt()));
+                duration = new Duration(Math.abs(reader.nextInt()), false);
                 break;
             case "artist":
                 artist = reader.nextString();

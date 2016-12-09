@@ -16,11 +16,12 @@ public class Film extends AbstractMedia {
     public Film() {
     }
 
-    public Film(String title, int releaseYear, int rating, Duration duration, String studio, String director) {
+    public Film(String title, int rating, int releaseYear, Duration duration, String studio, String director) {
         super(title, rating, releaseYear);
         this.duration = duration;
         this.studio = studio;
         this.director = director;
+        resetFieldValues();
     }
 
     @Override
@@ -44,26 +45,26 @@ public class Film extends AbstractMedia {
     protected void setFieldValues(BiConsumer<String, Object> fieldConsumer) {
         fieldConsumer.accept("duration", duration);
         fieldConsumer.accept("studio", studio);
-        fieldConsumer.accept("getDirector", director);
+        fieldConsumer.accept("director", director);
     }
 
     @Override
     protected void writeFields(JsonWriter writer) throws IOException {
-        writer.name("duration").value(duration);
+        writer.name("duration").value(duration.intValue());
         writer.name("studio").value(studio);
-        writer.name("getDirector").value(director);
+        writer.name("director").value(director);
     }
 
     @Override
     protected void readField(String name, JsonReader reader) throws IOException {
         switch (name) {
             case "duration":
-                duration = new Duration(reader.nextInt());
+                duration = new Duration(reader.nextInt(), true);
                 break;
             case "studio":
                 studio = reader.nextString();
                 break;
-            case "getDirector":
+            case "director":
                 director = reader.nextString();
                 break;
             default:
@@ -77,12 +78,9 @@ public class Film extends AbstractMedia {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-
+    
         Film film = (Film) o;
-
-        if (!duration.equals(film.duration)) return false;
-        if (!studio.equals(film.studio)) return false;
-        return director.equals(film.director);
+        return duration.equals(film.duration) && studio.equals(film.studio) && director.equals(film.director);
     }
 
     @Override
