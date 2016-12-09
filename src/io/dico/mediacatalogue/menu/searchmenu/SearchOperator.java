@@ -59,7 +59,11 @@ public abstract class SearchOperator implements BiPredicate<Object, Object> {
     }
 
     private final String description;
-
+    
+    /**
+     * A search operator is used to compare two values to see if they match.
+     * @param description The description of when the values passed match.
+     */
     private SearchOperator(String description) {
         this.description = description;
     }

@@ -8,7 +8,11 @@ public class Menu {
 
     private final String header;
     private final NavigableSet<MenuItem> items = new TreeSet<>();
-
+    
+    /**
+     * A menu takes care of showing a menu to the console, taking an action from the list and executing it.
+     * @param header The string displayed above the menu
+     */
     public Menu(String header) {
         this.header = header;
     }
@@ -23,6 +27,7 @@ public class Menu {
     }
 
     public Menu addItem(MenuItem item) {
+        // set position
         item.setIndex(items.size());
         items.add(item);
         return this;

@@ -8,6 +8,13 @@ import java.util.function.Predicate;
 
 abstract class SearchCondition implements Predicate<Media> {
     
+    /**
+     * A search condition takes media items and returns whether they match the search condition
+     * @param left the value for the left assignment
+     * @param right the value for the right assignment
+     * @param predicate the condition to match
+     * @return a new SearchCondition
+     */
     public static SearchCondition withPredicate(String left, String right, BiPredicate<Object, Object> predicate) {
         return new SearchCondition(left, right) {
             @Override

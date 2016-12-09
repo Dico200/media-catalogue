@@ -27,8 +27,14 @@ public abstract class SearchMenuItem extends MenuItem {
     private final MediaContainer mediaContainer;
     private final Menu listMenu;
     
+    /**
+     * A search menu item let's the user search for media items through many means.
+     * @param actionDescription The string above the menu.
+     * @param mediaContainer The media container instance
+     */
     public SearchMenuItem(String actionDescription, MediaContainer mediaContainer) {
         super(actionDescription);
+        // this menu lets the user choose how they want to search for the item. It's a media type menu with a custom entry for criteria search.
         listMenu = new MediaTypeMenu("Choose how you want to search for the item you want to " + actionDescription + ", I'll make a list of matches for you",
                 "all", this::byClass).addItem(MenuItem.withRunnable("specific criteria", this::search));
         this.mediaContainer = mediaContainer;
