@@ -269,9 +269,9 @@ public class MediaCatalogue {
                 return;
             }
             
-            console.writeLine("Enter path to file (from home folder)");
+            console.writeLine("Enter path to file (from home folder, without extension)");
             String input = console.requestLine();
-            String fileName = System.getProperty("user.home") + File.separator + input;
+            String fileName = System.getProperty("user.home") + File.separator + input + ".json";
             console.writeLine("Loading from " + fileName);
             
             try {
@@ -295,7 +295,7 @@ public class MediaCatalogue {
                 return;
             }
             
-            String line = "Enter path to file (from home folder)";
+            String line = "Enter path to file (from home folder, without extension)";
             if (fileLoadedFrom != null){
                 line += " (Enter: " + fileLoadedFrom + ")";
             }
@@ -304,7 +304,7 @@ public class MediaCatalogue {
             if (file.isEmpty() && fileLoadedFrom != null) {
                 file = fileLoadedFrom;
             }
-            file = System.getProperty("user.home") + File.separator + file;
+            file = System.getProperty("user.home") + File.separator + file + ".json";
             
             try {
                 mediaContainer.save(file, createFile);
